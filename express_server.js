@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; //default port 8080
 
 const bodyParser = require("body-parser");
+const { response } = require("express");
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+//Create a new short URL
 app.post("/urls", (req, res) => {
   let randomString = generateRandomString();
 
@@ -23,10 +25,39 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randomString}`);
 });
 
+//Delete a URL from the database
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+
+  res.redirect("/urls");
+});
+
+//Function that updates a URL
+const updateURL = (id, content) => {
+  urlDatabase[id] = content;
+}
+
+//POST to update the url in the Database
+app.post("/urls/:id", (req, res) => {
+  const urlID = req.params.id;
+  const longURL = req.body.longURL;
+  
+  updateURL(urlID, longURL);
+  
+  res.redirect(`/urls/${urlID}`);
+});
+
+/* //Edit a resource
+app.post("/urls/:id", (req, res) => {
+  res.render("urls_show");
+  res.redirect("urls_show");
+}) */
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+//Using the shortURL, redirect to the original longURL destination
 app.get("/u/:shortURL", (req, res) => {
   //console.log(req.params.shortURL);
   const longURL = urlDatabase[req.params.shortURL];
@@ -44,6 +75,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//Add shortURL and longURL values to the list of URLs on the myURLs page
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { 
     shortURL: req.params.shortURL, 
