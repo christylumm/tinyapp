@@ -1,23 +1,26 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
-
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const cookieSession = require('cookie-session');
+
 const { response } = require("express");
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}))
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-//Create a new short URL
+//CREATE a new short URL
 app.post("/urls", (req, res) => {
   let randomString = generateRandomString();
 
@@ -25,19 +28,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${randomString}`);
 });
 
-//Delete a URL from the database
+//DELETE a URL from the database
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
 
   res.redirect("/urls");
 });
 
-//Function that updates a URL
+//UPDATE a URL, helper function
 const updateURL = (id, content) => {
   urlDatabase[id] = content;
 }
 
-//POST to update the url in the Database
+//POST to UPDATE the url in the Database
 app.post("/urls/:id", (req, res) => {
   const urlID = req.params.id;
   const longURL = req.body.longURL;
@@ -47,31 +50,53 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${urlID}`);
 });
 
-/* //Edit a resource
-app.post("/urls/:id", (req, res) => {
-  res.render("urls_show");
-  res.redirect("urls_show");
-}) */
+//GET login information
+app.get("/login", (req, res) => {
+  const templateVars = { 
+    username: req.session.username
+  }
+  res.render("urls_index", templateVars);
+});
+
+//POST to handle the /login in your Express server
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  
+  if (username) {
+    req.session.username = username;
+    res.redirect('/urls');
+  } //else {
+/*     const templateVars = {
+      
+      error: "Sorry! Looks like that username wasn't quite good enough. Try another one!"
+    }
+    res.render("login", templateVars); */
+  //}
+});
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//Using the shortURL, redirect to the original longURL destination
+//GET the original longURL destination, redirect when user clicks on shortURL
 app.get("/u/:shortURL", (req, res) => {
-  //console.log(req.params.shortURL);
   const longURL = urlDatabase[req.params.shortURL];
-  //console.log(longURL);
   res.redirect(longURL);
 });
 
 //Add a route for /urls and use res.render() to pass the URL data to our template
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { 
+    username: req.session.username
+  }
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { 
+    urls: urlDatabase,
+    username: req.session.username
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -79,7 +104,8 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { 
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.session.username
   };
   res.render("urls_show", templateVars);
 });
