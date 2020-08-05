@@ -16,19 +16,28 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.post("/urls", (req, res) => {
+  let randomString = generateRandomString();
+
+  urlDatabase[randomString] = req.body.longURL;
+  res.redirect(`/urls/${randomString}`);
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>Doggo</b></body></html>\n");
+app.get("/u/:shortURL", (req, res) => {
+  //console.log(req.params.shortURL);
+  const longURL = urlDatabase[req.params.shortURL];
+  //console.log(longURL);
+  res.redirect(longURL);
 });
 
 //Add a route for /urls and use res.render() to pass the URL data to our template
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-
 
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
@@ -42,11 +51,6 @@ app.get("/urls/:shortURL", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
-
-app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("Ok");
-})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -63,5 +67,3 @@ function generateRandomString() {
   }
   return result;
 };
-
-console.log(generateRandomString());
