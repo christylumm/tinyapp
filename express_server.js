@@ -13,7 +13,7 @@ app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
-}))
+}));
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -26,6 +26,7 @@ app.post("/urls", (req, res) => {
 
   urlDatabase[randomString] = req.body.longURL;
   res.redirect(`/urls/${randomString}`);
+  console.log(urlDatabase);
 });
 
 //DELETE a URL from the database
@@ -38,7 +39,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 //UPDATE a URL, helper function
 const updateURL = (id, content) => {
   urlDatabase[id] = content;
-}
+};
 
 //POST to UPDATE the url in the Database
 app.post("/urls/:id", (req, res) => {
@@ -52,9 +53,9 @@ app.post("/urls/:id", (req, res) => {
 
 //GET login information
 app.get("/login", (req, res) => {
-  const templateVars = { 
+  let templateVars = {
     username: req.session.username
-  }
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -62,7 +63,12 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const username = req.body.username;
   
+  let templateVars = {
+    username: req.cookies["username"],
+  };
+  
   if (username) {
+    res.cookie('username', username);
     req.session.username = username;
     res.redirect('/urls');
   } //else {
@@ -72,6 +78,8 @@ app.post("/login", (req, res) => {
     }
     res.render("login", templateVars); */
   //}
+
+  res.render("urls_index", templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -86,14 +94,14 @@ app.get("/u/:shortURL", (req, res) => {
 
 //Add a route for /urls and use res.render() to pass the URL data to our template
 app.get("/urls/new", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     username: req.session.username
-  }
+  };
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { 
+  let templateVars = {
     urls: urlDatabase,
     username: req.session.username
   };
@@ -102,8 +110,8 @@ app.get("/urls", (req, res) => {
 
 //Add shortURL and longURL values to the list of URLs on the myURLs page
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { 
-    shortURL: req.params.shortURL, 
+  let templateVars = {
+    shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
     username: req.session.username
   };
@@ -114,7 +122,7 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-function generateRandomString() {
+const generateRandomString = function() {
   let result = '';
 
   //generate string based off these alphanumeric characters
