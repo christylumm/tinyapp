@@ -3,17 +3,17 @@ const app = express();
 const PORT = 8080; //default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const cookieSession = require('cookie-session');
+//const cookieSession = require('cookie-session');
 
 const { response } = require("express");
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
-app.use(cookieSession({
+/* app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
-}));
+})); */
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -26,7 +26,7 @@ app.post("/urls", (req, res) => {
 
   urlDatabase[randomString] = req.body.longURL;
   res.redirect(`/urls/${randomString}`);
-  console.log(urlDatabase);
+  //console.log(urlDatabase);
 });
 
 //DELETE a URL from the database
@@ -51,36 +51,36 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${urlID}`);
 });
 
-//GET login information
+/* //GET login information
 app.get("/login", (req, res) => {
   let templateVars = {
     username: req.session.username
   };
   res.render("urls_index", templateVars);
-});
+}); */
 
 //POST to handle the /login in your Express server
 app.post("/login", (req, res) => {
   const username = req.body.username;
   
-  let templateVars = {
-    username: req.cookies["username"],
-  };
+/*   let templateVars = {
+    username: req.cookies["username"]
+  }; */
   
   if (username) {
     res.cookie('username', username);
-    req.session.username = username;
     res.redirect('/urls');
-  } //else {
-/*     const templateVars = {
-      
-      error: "Sorry! Looks like that username wasn't quite good enough. Try another one!"
-    }
-    res.render("login", templateVars); */
-  //}
+  }
 
-  res.render("urls_index", templateVars);
+  //res.render("urls_index", templateVars);
 });
+
+//POST to handle /logout
+app.post("/logout", (req, res) => {
+  //console.log(req.body);
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -95,7 +95,7 @@ app.get("/u/:shortURL", (req, res) => {
 //Add a route for /urls and use res.render() to pass the URL data to our template
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.session.username
+    username: req.cookies["username"]
   };
   res.render("urls_new", templateVars);
 });
@@ -103,7 +103,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.session.username
+    username: req.cookies["username"]
   };
   res.render("urls_index", templateVars);
 });
@@ -113,7 +113,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.session.username
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
