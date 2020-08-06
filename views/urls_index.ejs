@@ -27,13 +27,47 @@
         <% for(let url in urls) { %>
           <tr>
 
-            <td><form method="POST" action="/urls/<%= url %>/delete"><%= url %></form></td>
+            <td>
+              <form 
+                method="POST"
+                action="/urls/<%= url %>/delete">
+                <%= url %>
+              </form>
+            </td>
 
-            <td><form method="POST" action="/urls/<%= url %>/delete"><%= urls[url] %></form></td>
+            <td>
+              <form
+                method="POST"
+                action="/urls/<%= url %>/delete">
+                <%= urls[url] %>
+              </form>
+            </td>
 
-            <td><form method="POST" action="/urls/<%= url %>" name='shortURL'><button type="submit" class="btn btn-outline-primary">Edit</button></form></td>
+            <td>
+                <form method="POST"
+                action="/urls/<%= url %>"
+                name='shortURL'>
+                
+                  <button 
+                    type="submit"
+                    class="btn btn-outline-primary">Edit
+                  </button>
+                </form>
+              </td>
 
-            <td><form method="POST" action="/urls/<%= url %>/delete" name='shortURL'><button type="submit" class="btn btn-outline-danger" value="delete">Delete</button></form></td>
+            <td>
+              <form
+                method="POST"
+                action="/urls/<%= url %>/delete" 
+                name='shortURL'>
+                
+                <button 
+                  type="submit"
+                  class="btn btn-outline-danger" 
+                  value="delete">Delete
+                </button>
+              </form>
+            </td>
           </tr>
         <% } %>
       </tbody>

@@ -1,3 +1,4 @@
+// SETUP ------------------_-----------------
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
@@ -9,6 +10,13 @@ const { response } = require("express");
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
+
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
+// USER DATABASE ------------------------------
 
 const users = {
   "userRandomID": {
@@ -24,10 +32,75 @@ const users = {
   }
 }
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+// HELPER FUNCTIONS ----------------------------
+
+//UPDATE a URL, helper function
+const updateURL = (id, content) => {
+  urlDatabase[id] = content;
 };
+
+//CREATE random string for shortURL
+const generateRandomString = function() {
+  let result = '';
+
+  //generate string based off these alphanumeric characters
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+
+// GET ---------------------------------------
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+//GET the original longURL destination, redirect when user clicks on shortURL
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
+
+//GET a route for /urls and use res.render() to pass the URL data to our template
+app.get("/urls/new", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
+});
+
+//GET to return the registration page template
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  }
+  res.render("register", templateVars);
+});
+
+//GET urls_index based on urlDatabase
+app.get("/urls", (req, res) => {
+  let templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
+  res.render("urls_index", templateVars);
+});
+
+//GET shortURL and longURL values on the list of URLs on the myURLs page
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies["username"]
+  };
+  res.render("urls_show", templateVars);
+});
+
+// POST ---------------------------------------
 
 //CREATE a new short URL
 app.post("/urls", (req, res) => {
@@ -44,11 +117,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
   res.redirect("/urls");
 });
-
-//UPDATE a URL, helper function
-const updateURL = (id, content) => {
-  urlDatabase[id] = content;
-};
 
 //POST to UPDATE the url in the Database
 app.post("/urls/:id", (req, res) => {
@@ -77,14 +145,6 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 })
 
-//GET to return the registration page template
-app.get("/register", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"]
-  }
-  res.render("register", templateVars);
-});
-
 //POST or catch the submit of the register form
 app.post('/register', (req, res) => {
   //Extract the user info form the form
@@ -93,54 +153,10 @@ app.post('/register', (req, res) => {
 });
 
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// LISTEN ---------------------------------------
 
-//GET the original longURL destination, redirect when user clicks on shortURL
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
-
-//Add a route for /urls and use res.render() to pass the URL data to our template
-app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"]
-  };
-  res.render("urls_new", templateVars);
-});
-
-app.get("/urls", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    username: req.cookies["username"]
-  };
-  res.render("urls_index", templateVars);
-});
-
-//Add shortURL and longURL values to the list of URLs on the myURLs page
-app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
-  };
-  res.render("urls_show", templateVars);
-});
-
+//Allows us to make HTTP requests to port 8080
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const generateRandomString = function() {
-  let result = '';
-
-  //generate string based off these alphanumeric characters
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
