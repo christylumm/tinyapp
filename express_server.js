@@ -10,6 +10,20 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+const users = {
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -50,16 +64,10 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   const username = req.body.username;
   
-/*   let templateVars = {
-    username: req.cookies["username"]
-  }; */
-  
   if (username) {
     res.cookie('username', username);
     res.redirect('/urls');
   }
-
-  //res.render("urls_index", templateVars);
 });
 
 //POST to handle /logout
@@ -68,6 +76,22 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
 })
+
+//GET to return the registration page template
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  }
+  res.render("register", templateVars);
+});
+
+//POST or catch the submit of the register form
+app.post('/register', (req, res) => {
+  //Extract the user info form the form
+  const email = req.body.email;
+  const password = req.body.password;
+});
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
