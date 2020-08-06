@@ -3,17 +3,12 @@ const app = express();
 const PORT = 8080; //default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-//const cookieSession = require('cookie-session');
 
 const { response } = require("express");
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
-/* app.use(cookieSession({
-  name: 'session',
-  keys: ['key1', 'key2']
-})); */
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -50,14 +45,6 @@ app.post("/urls/:id", (req, res) => {
   
   res.redirect(`/urls/${urlID}`);
 });
-
-/* //GET login information
-app.get("/login", (req, res) => {
-  let templateVars = {
-    username: req.session.username
-  };
-  res.render("urls_index", templateVars);
-}); */
 
 //POST to handle the /login in your Express server
 app.post("/login", (req, res) => {
