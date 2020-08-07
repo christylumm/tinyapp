@@ -1,4 +1,4 @@
-// SETUP ------------------_-----------------
+// SETUP -----------------------------------------
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
@@ -16,7 +16,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-// USER DATABASE ------------------------------
+// USER DATABASE ------------------------------------
 
 const users = {
   "userRandomID": {
@@ -32,7 +32,7 @@ const users = {
   }
 }
 
-// HELPER FUNCTIONS ----------------------------
+// HELPER FUNCTIONS ----------------------------------
 
 //UPDATE a URL, helper function
 const updateURL = (id, content) => {
@@ -52,8 +52,38 @@ const generateRandomString = function() {
   return result;
 };
 
+//ADD new user by generating an ID and creating a new user object
+const addNewUser = (email, password) => {
+  //Generate an ID
+  const userID = generateRandomString();
 
-// GET ---------------------------------------
+  //Create a new user object with generated userID
+  const newUser = {
+    id: userID,
+    email: email,
+    password: password,
+  };
+
+  //Add new user object to users database
+  users[userID] = newUser;
+
+  //Return userID
+  return userID;
+};
+
+//FIND user based on email in the database
+const findUserByEmail = (email) => {
+  for (let userID in users) {
+    if (users[userID].email === email) {
+      //return the full user object
+      return users[userID];
+    }
+  }
+
+  return false;
+}
+
+// GET ----------------------------------------------
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -100,7 +130,48 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// POST ---------------------------------------
+// POST --------------------------------------------
+
+//POST to handle the /login in your Express server
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  
+  if (username) {
+    res.cookie('username', username);
+    res.redirect('/urls');
+  }
+});
+
+//POST to handle /logout
+app.post("/logout", (req, res) => {
+  //console.log(req.body);
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
+
+//POST or catch the submit of the register form
+app.post('/register', (req, res) => {
+  //Extract the user info form the form
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const user = findUserByEmail(email);
+
+  //If user doesn't exist in database
+  if (!user) {
+    //Add the user in the users database
+    const userID = addNewUser(email, password);
+    //Set the user ID in a cookie
+    res.cookie('user_id', userID);
+    //console.log(userID);
+    //console.log(users);
+
+    //Redirect to /urls index
+    res.redirect("/urls");
+  } else {
+    res.status(401).send("Error: email already exists! Choose another email");
+  }
+});
 
 //CREATE a new short URL
 app.post("/urls", (req, res) => {
@@ -128,32 +199,8 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${urlID}`);
 });
 
-//POST to handle the /login in your Express server
-app.post("/login", (req, res) => {
-  const username = req.body.username;
-  
-  if (username) {
-    res.cookie('username', username);
-    res.redirect('/urls');
-  }
-});
 
-//POST to handle /logout
-app.post("/logout", (req, res) => {
-  //console.log(req.body);
-  res.clearCookie("username");
-  res.redirect("/urls");
-})
-
-//POST or catch the submit of the register form
-app.post('/register', (req, res) => {
-  //Extract the user info form the form
-  const email = req.body.email;
-  const password = req.body.password;
-});
-
-
-// LISTEN ---------------------------------------
+// LISTEN ------------------------------------------
 
 //Allows us to make HTTP requests to port 8080
 app.listen(PORT, () => {
