@@ -11,12 +11,16 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+
+// DATABASES ------------------------------------
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
-};
 
-// USER DATABASE ------------------------------------
+  // b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  // i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
+};
 
 const users = {
   "userRandomID": {
@@ -112,20 +116,25 @@ app.get("/u/:shortURL", (req, res) => {
 //GET a route for /urls and use res.render() to pass the URL data to our template
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    //username: req.cookies["username"],
     user: users[req.cookies["user_id"]]
   };
-  res.render("urls_new", templateVars);
+  //res.render("urls_new", templateVars);
+
+  if (users[req.cookies["user_id"]]) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("login", templateVars);
+  }
 });
 
 //GET to return the registration page template
 app.get("/register", (req, res) => {
   const templateVars = {
-    //username: req.cookies["username"],
     user: users[req.cookies["user_id"]]
   }
   res.render("register", templateVars);
   
+
 });
 
 app.get("/login", (req, res) => {
@@ -139,11 +148,10 @@ app.get("/login", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    //username: req.cookies["username"],
     user: users[req.cookies["user_id"]]
   };
 
-  console.log(req.cookies["user_id"]);
+  //console.log(req.cookies["user_id"]);
   res.render("urls_index", templateVars);
 });
 
@@ -152,7 +160,6 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    //username: req.cookies["username"]
     user: users[req.cookies["user_id"]]
   };
   
@@ -190,9 +197,6 @@ app.post("/login", (req, res) => {
 
 //POST to handle /logout
 app.post("/logout", (req, res) => {
-  //console.log(req.body);
-  // console.log("inside logout");
-  // console.log(req.cookie);
   res.clearCookie("user_id");
   res.redirect("/urls");
 })
@@ -219,8 +223,6 @@ app.post('/register', (req, res) => {
       res.redirect("/urls");
     }
   }
-  //console.log(userID);
-
   
 });
 
