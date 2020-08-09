@@ -6,8 +6,8 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["Mockup of TinyApp across devices"](https://github.com/christylumm/tinyapp/blob/master/docs/device-display.png)
 !["Phone mockup of the Create Account page"](https://github.com/christylumm/tinyapp/blob/master/docs/create-account.png)
-!["Main URLs index on a laptop"](https://github.com/christylumm/tinyapp/blob/master/docs/urls-page.png)
 !["Mockup of TinyApp in a home setting"](https://github.com/christylumm/tinyapp/blob/master/docs/home-display.png)
+!["Main URLs index on a laptop"](https://github.com/christylumm/tinyapp/blob/master/docs/urls-page.png)
 
 If a user tries to perform certain actions without being logged in, they will be redirected to the login page.
 
