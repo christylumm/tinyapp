@@ -61,7 +61,7 @@ const generateRandomString = function() {
     randomString += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   //Generate a new ID if ID is already used
-  if (checkID(randomString)) {
+  if (findUserByID(randomString)) {
     generateRandomString();
   }
 
@@ -151,12 +151,6 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-//GET the original longURL destination, redirect when user clicks on shortURL
-// app.get("/u/:shortURL", (req, res) => {
-//   const longURL = urlDatabase[req.params.shortURL].longURL;
-//   res.redirect(longURL);
-// });
-
 //GET a route for /urls and use res.render() to pass the URL data to our template
 app.get("/urls/new", (req, res) => {
   //If you're not logged in as a user, redirect them to the login page
@@ -168,16 +162,6 @@ app.get("/urls/new", (req, res) => {
     };
     res.render("urls_new", templateVars);
   }
-  
-  // const templateVars = {
-  //   user: users[req.cookies["user_id"]]
-  // };
-
-  // if (users[req.cookies["user_id"]]) {
-  //   res.render("urls_new", templateVars);
-  // } else {
-  //   res.render("login", templateVars);
-  // }
 });
 
 //EDIT PAGE - shows only if they're a user
@@ -223,14 +207,6 @@ app.get("/urls", (req, res) => {
   }
 
   res.render("urls_index", templateVars);
-
-  // let templateVars = {
-  //   urls: urlDatabase,
-  //   user: users[req.cookies["user_id"]]
-  // };
-
-  // console.log(req.cookies["user_id"]);
-  // res.render("urls_index", templateVars);
 });
 
 // REGISTER - shows register page
@@ -248,20 +224,6 @@ app.get("/login", (req, res) => {
   }
 
   res.render("login", templateVars);
-/* 
-  if (req.session.name) {
-    res.redirect("/urls");
-  } else {
-    let templateVars = {
-      name: req.session.name
-    };
-    res.render("login", templateVars)
-  } */
-
-/*   const templateVars = {
-    user: users[req.cookies["user_id"]]
-  }
-  res.render("login", templateVars); */
 });
 
 // MAIN PAGE - redirect '/' to list of urls
@@ -286,7 +248,6 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-
 // DELETE a URL from the database
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
@@ -303,38 +264,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-//UPDATE long URL associated with the short URL
+//UPDATE long URL associated with the short URL, after clicking the edit button
 app.post("/urls/:shortURL", (req, res) => {
   if (req.session.user_id) {
     urlDatabase[req.params.shortURL]['longURL'] = req.body.longURL;
+    res.redirect("/urls");
   } else {
     let templateVars = {
       user: getUserByID(req.session.user_id)
     }
     res.render("login", templateVars);
   }
-
-/*   if (req.session.name) {
-    res.redirect('/login');
-    res.status(403).send("Looks like you're not logged in! Please log in to edit this URL");
-  } else if (urlDatabase[req.params.shortURL]['userID'] !== req.session.name) {
-    res.status(403).send("This URL was submitted by someone else, and therefore you cannot edit it");
-  } else {
-    const shortURL = req.params.shortURL;
-    const longURL = req.body.longURL;
-    urlDatabase[shortURL].longURL = longURL;
-
-    res.redirect("/urls");
-  } */
-
-    // const urlID = req.params.shortURL;
-  // const longURL = urlDatabase[req.params.shortURL].longURL;
-  
-  // updateURL(urlID, longURL);
-  
-  // res.redirect(`/urls/${urlID}`);
-
-  //If the user isn't logged in, redirect them to the login page
 
 });
 
@@ -363,30 +303,6 @@ app.post('/register', (req, res) => {
     res.redirect("/urls");
   }
   
-  // if (email === '' || password === '') {
-    
-  // } else {
-  //   if (findUserByEmail(email) !== '') {
-  //     res.status(400).send('Email already exists in the database');
-  //   } else {
-  //     //Add user to database
-  //     const userID = generateRandomString();
-  //     const hash = bcrypt.hashSync(password, salt);
-
-  //     users[userID] = {
-  //       id: userID,
-  //       email: email,
-  //       password: hash
-  //     };
-
-  //     //Set the user ID in a cookie
-  //     res.cookie('user_id', userID);
-
-  //     //Redirect to /urls index
-  //     res.redirect("/urls");
-  //   }
-  // }
-  
 });
 
 
@@ -411,26 +327,6 @@ app.post("/login", (req, res) => {
   } else {
     res.status(403).send("Oops! Please double check that your email and password are correct, and try again.")
   }
-
-  // if (email === '' || password === '') {
-  //   res.status(403).send('Looks like you missed a field! Please fill in all the fields');
-  // } else {
-  //   if (findUserByEmail(email) !== '') {
-  //     if (findUserByPassword(password)) {
-  //       let person = findUserByEmail(email);
-  //       // req.cookies["user_id"] = person['id'];
-  //       res.cookie('user_id', person['id']);
-  //       //console.log(person['id']);
-  //       res.redirect("/urls");
-  //     } else {
-  //       if (!bcrypt.compareSync(password, users[findUserByEmail(email).password])) {
-  //         res.status(403).send("Password doesn't match")
-  //       }
-  //     } else {
-  //       res.direct("/urls");
-  //     }
-  //   }
-  // }
 });
 
 // POST to handle /logout
