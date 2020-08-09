@@ -68,16 +68,6 @@ const generateRandomString = function() {
   return randomString;
 };
 
-//Checks if an ID is already in the users and url databases
-const checkID = (userID) => {
-  if (userID in users) {
-    return true;
-  } else if (userID in urlDatabase) {
-    return true;
-  } 
-  return false;
-} 
-
 //Add new user by generating an ID, creating a new user object, and adding user into to users database
 const addNewUser = (email, password) => {
   //Generate an ID
@@ -96,9 +86,9 @@ const addNewUser = (email, password) => {
 
 
 //Check if user email already exists in the users database
-const findUserByEmail = (email) => {
-  for (let id in users) {
-    if (users[id]['email'] === email) {
+const findUserByEmail = (email, database) => {
+  for (let id in database) {
+    if (database[id]['email'] === email) {
       return true;
     }
   }
@@ -289,7 +279,7 @@ app.post('/register', (req, res) => {
     res.status(400).send('Looks like you missed a field! Please fill out all the fields to complete registration');
 
     //Checks if email exists in the database
-  } else if (findUserByEmail(email)) {
+  } else if (findUserByEmail(email, users)) {
     res.status(400).send('Looks like this email already exists! Please try another one.');
 
     //If the user meets the requirements as a new user, generate a hashed password
@@ -315,7 +305,7 @@ app.post("/login", (req, res) => {
     res.status(403).send('Looks like you missed a field! Please fill in all the fields');
 
     //If the user email is not in the database, send an alert that they have the wrong email
-  } else if (findUserByEmail(email) === false) {
+  } else if (findUserByEmail(email, users) === false) {
     res.status(403).send("Sorry! It looks like your email isn't in our database. Please try again!");
   
     //Check if bcrypt password matches with password in users database, if true, redirect to urls list
